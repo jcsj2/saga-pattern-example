@@ -1,0 +1,43 @@
+### MS - Clientes ###
+
+GET http://localhost:3000/clientes
+
+###
+
+GET http://localhost:3000/clientes/<ID>
+
+###
+
+POST http://localhost:3000/clientes HTTP/1.1
+content-type: application/json
+
+{
+ "nome": "Zé Cláudio",
+ "email": "zeclaudio@email.com",
+ "telefone": "8181818181",
+ "endereco": "Rua tal, beco da tilapia nº 39. Terra do nunca - Lua",
+ "enderecoCobranca": "Lado oculto da lua Nº 101. Lua - Espaço",
+ "documentoIdentificacao": "12392301293",
+ "preferencias": "video game, pizza, praia"
+}
+
+###
+
+PUT http://localhost:3000/clientes/9edbdc02-5611-4835-9fc7-0e7900499837 HTTP/1.1
+content-type: application/json
+
+{
+ "nome": "Zé Cláudio 222",
+ "email": "zeclaudio@email.com",
+ "telefone": "8181818181",
+ "endereco": "Rua tal, beco da tilapia nº 39. Terra do nunca - Lua",
+ "enderecoCobranca": "Lado oculto da lua Nº 101. Lua - Espaço",
+ "documentoIdentificacao": "12392301293",
+ "preferencias": "video game, pizza, praia"
+}
+
+###
+
+### MS - Pedidos ###
+
+GET http://localhost:3001/clientes

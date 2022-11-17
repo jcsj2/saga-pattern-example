@@ -1,0 +1,44 @@
+MS-Client -> Gerencia os clientes
+
+Campos:
+- Id
+- Nome
+- Email
+- Telefone
+- Endereço [Rua, Numero, Cidade, UF, Complemento]
+- Endereço cobrança
+- Documento de identificação
+- Preferencias
+
+
+MS-Pedidos -> 
+
+Campos (tabela pedido):
+- Id
+- IdCliente
+- Items
+- DataHora
+- Valor total
+- Status
+
+Campos (tabela cliente):
+- Id
+- Nome
+- Telefone
+- Endereço
+
+MS-Pagamentos ->
+
+Campos (tabela cliente):
+- Id
+- Nome
+- Documento de identificação
+- Endereço de cobrança
+- Email
+
+Campos (tabela pagamento):
+- IdCliente
+- IdPedido
+- Valor
+- FormaPagamento
+- Status
