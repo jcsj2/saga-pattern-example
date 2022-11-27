@@ -3,9 +3,16 @@ const crypto = require('crypto');
 const { getConnection } = require('./rabbitmq');
 
 const clientes = [];
+const exchCreateEditClientes = 'ex-create-edit-clientes';
 
 const app = express();
 app.use(express.json());
+
+const setupRabbitMQ = async () => {
+  const conn = await getConnection();
+  const ch = await conn.createChannel();
+  await ch.assertExchange(exchCreateEditClientes, 'fanout');
+};
 
 const listarClientes = (req, res) => {
   res.json(clientes);
@@ -22,8 +29,7 @@ const detalharCliente = (req, res) => {
 const enviarDadosClienteParaExchangeCriarEditar = async (dadosCliente) => {
   const conn = await getConnection();
   const ch = await conn.createChannel();
-  const exch = 'ex-create-edit-clientes';
-  await ch.publish(exch, '', Buffer.from(JSON.stringify(dadosCliente)));
+  await ch.publish(exchCreateEditClientes, '', Buffer.from(JSON.stringify(dadosCliente)));
 };
 
 const criarCliente = async (req, res) => {
@@ -56,6 +62,10 @@ const atualizarCliente = async (req, res) => {
 app.route('/clientes').get(listarClientes).post(criarCliente);
 app.route('/clientes/:id').get(detalharCliente).put(atualizarCliente);
 
-app.listen(3000, () => {
-  console.log('Serviço de clientes inicalizado');
+setupRabbitMQ().then(() => {
+  app.listen(3000, () => {
+    console.log('Serviço de clientes inicalizado');
+  });
+}).catch((err) => {
+  console.log(`Falha no setup do RabbitMQ ${err.message}`);
 });

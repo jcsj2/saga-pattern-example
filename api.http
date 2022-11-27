@@ -41,3 +41,19 @@ content-type: application/json
 ### MS - Pedidos ###
 
 GET http://localhost:3001/clientes
+
+###
+
+POST http://localhost:3001/pedidos HTTP/1.1
+content-type: application/json
+
+{
+ "idCliente": "5de433c4-69dd-4a6a-aa98-9b0b1de6a139",
+ "items": ["God of war - PS5", "Evil West"],
+ "dadosCartao": "123456"
+}
+
+
+### MS - Pagamentos ###
+
+GET http://localhost:3002/clientes

@@ -5,7 +5,8 @@
   "main": "ms-clientes.js",
   "scripts": {
     "clientes-dev": "nodemon ms-clientes.js --quiet",
-    "pedidos-dev": "nodemon ms-pedidos.js --quiet"
+    "pedidos-dev": "nodemon ms-pedidos.js --quiet",
+    "pagamentos-dev": "nodemon ms-pagamentos.js --quiet"
   },
   "keywords": [],
   "author": "",
