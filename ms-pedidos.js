@@ -9,6 +9,9 @@ const queuePedidosCriarEditarClientes = 'q-pedidos-criar-editar-clientes';
 
 const exchCreatePedidos = 'ex-create-pedidos';
 
+const exchPagamentoExecutado = 'ex-pagamento-executado';
+const queuePedidosAtualizarAposPagamento = 'q-pedidos-atualizar-apos-pagamento';
+
 const setupRabbitMQ = async () => {
   const conn = await getConnection();
   const ch = await conn.createChannel();
@@ -16,6 +19,9 @@ const setupRabbitMQ = async () => {
   await ch.bindQueue(queuePedidosCriarEditarClientes, exchCreateEditClientes, '');
 
   await ch.assertExchange(exchCreatePedidos, 'fanout');
+
+  await ch.assertQueue(queuePedidosAtualizarAposPagamento);
+  await ch.bindQueue(queuePedidosAtualizarAposPagamento, exchPagamentoExecutado, '');
 };
 
 const criarAtualizarCliente = (dadosCliente) => {
@@ -33,6 +39,11 @@ const criarAtualizarCliente = (dadosCliente) => {
   }
 };
 
+const atualizarStatusPagamentoNoPedido = (dadosPagamento) => {
+  const indicePedido = pedidos.findIndex((p) => p.id === dadosPagamento.idPedido);
+  pedidos[indicePedido].status = dadosPagamento.status;
+};
+
 async function doConsume() {
   const conn = await getConnection();
   const ch = await conn.createChannel();
@@ -43,6 +54,13 @@ async function doConsume() {
 
     ch.ack(msg);
   }, { consumerTag: 'consumerPedidosCriarEditarClientes' });
+
+  await ch.consume(queuePedidosAtualizarAposPagamento, (msg) => {
+    const dadosPagamento = JSON.parse(msg.content.toString());
+    atualizarStatusPagamentoNoPedido(dadosPagamento);
+
+    ch.ack(msg);
+  }, { consumerTag: 'consumerPedidosAtualizarAposPagamento' });
 }
 
 const app = express();

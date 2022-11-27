@@ -44,16 +44,24 @@ GET http://localhost:3001/clientes
 
 ###
 
+GET http://localhost:3001/pedidos
+
+###
+
 POST http://localhost:3001/pedidos HTTP/1.1
 content-type: application/json
 
 {
- "idCliente": "5de433c4-69dd-4a6a-aa98-9b0b1de6a139",
+ "idCliente": "50919c7d-965a-4855-81b5-21cf4dee670e",
  "items": ["God of war - PS5", "Evil West"],
- "dadosCartao": "123456"
+ "dadosCartao": "000000"
 }
 
 
 ### MS - Pagamentos ###
 
 GET http://localhost:3002/clientes
+
+###
+
+GET http://localhost:3002/pagamentos
