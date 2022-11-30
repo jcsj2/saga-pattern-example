@@ -1,14 +1,20 @@
+@hostclientes = http://localhost:3000
+@hostpedidos = http://localhost:3001
+@hostpagamentos = http://localhost:3002
+
+@idcliente = a6c674de-42a9-4792-978d-9cb94c0ddfc2
+
 ### MS - Clientes ###
 
-GET http://localhost:3000/clientes
+GET {{hostclientes}}/clientes
 
 ###
 
-GET http://localhost:3000/clientes/<ID>
+GET {{hostclientes}}/clientes/{{idcliente}}
 
 ###
 
-POST http://localhost:3000/clientes HTTP/1.1
+POST {{hostclientes}}/clientes HTTP/1.1
 content-type: application/json
 
 {
@@ -23,7 +29,7 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:3000/clientes/9edbdc02-5611-4835-9fc7-0e7900499837 HTTP/1.1
+PUT {{hostclientes}}/clientes/{{idcliente}} HTTP/1.1
 content-type: application/json
 
 {
@@ -31,8 +37,8 @@ content-type: application/json
  "email": "zeclaudio@email.com",
  "telefone": "8181818181",
  "endereco": "Rua tal, beco da tilapia nº 39. Terra do nunca - Lua",
- "enderecoCobranca": "Lado oculto da lua Nº 101. Lua - Espaço",
- "documentoIdentificacao": "12392301293",
+ "enderecoCobranca": "Lado oculto oposto da lua Nº 101. Lua - Espaço",
+ "documentoIdentificacao": "43243212343",
  "preferencias": "video game, pizza, praia"
 }
 
@@ -40,28 +46,28 @@ content-type: application/json
 
 ### MS - Pedidos ###
 
-GET http://localhost:3001/clientes
+GET {{hostpedidos}}/clientes
 
 ###
 
-GET http://localhost:3001/pedidos
+GET {{hostpedidos}}/pedidos
 
 ###
 
-POST http://localhost:3001/pedidos HTTP/1.1
+POST {{hostpedidos}}/pedidos HTTP/1.1
 content-type: application/json
 
 {
- "idCliente": "50919c7d-965a-4855-81b5-21cf4dee670e",
+ "idCliente": "{{idcliente}}",
  "items": ["God of war - PS5", "Evil West"],
- "dadosCartao": "000000"
+ "dadosCartao": "1000000"
 }
 
 
 ### MS - Pagamentos ###
 
-GET http://localhost:3002/clientes
+GET {{hostpagamentos}}/clientes
 
 ###
 
-GET http://localhost:3002/pagamentos
+GET {{hostpagamentos}}/pagamentos

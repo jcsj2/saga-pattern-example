@@ -1,28 +1,11 @@
 const express = require('express');
 const crypto = require('crypto');
-const { getConnection } = require('./rabbitmq');
+const {
+  RabbitMQUtils, exchanges, queues,
+} = require('./rabbitmq');
 
 const clientes = [];
 const pedidos = [];
-const exchCreateEditClientes = 'ex-create-edit-clientes';
-const queuePedidosCriarEditarClientes = 'q-pedidos-criar-editar-clientes';
-
-const exchCreatePedidos = 'ex-create-pedidos';
-
-const exchPagamentoExecutado = 'ex-pagamento-executado';
-const queuePedidosAtualizarAposPagamento = 'q-pedidos-atualizar-apos-pagamento';
-
-const setupRabbitMQ = async () => {
-  const conn = await getConnection();
-  const ch = await conn.createChannel();
-  await ch.assertQueue(queuePedidosCriarEditarClientes);
-  await ch.bindQueue(queuePedidosCriarEditarClientes, exchCreateEditClientes, '');
-
-  await ch.assertExchange(exchCreatePedidos, 'fanout');
-
-  await ch.assertQueue(queuePedidosAtualizarAposPagamento);
-  await ch.bindQueue(queuePedidosAtualizarAposPagamento, exchPagamentoExecutado, '');
-};
 
 const criarAtualizarCliente = (dadosCliente) => {
   const indiceCliente = clientes.findIndex((c) => c.id === dadosCliente.id);
@@ -45,17 +28,17 @@ const atualizarStatusPagamentoNoPedido = (dadosPagamento) => {
 };
 
 async function doConsume() {
-  const conn = await getConnection();
+  const conn = await RabbitMQUtils.getConnection();
   const ch = await conn.createChannel();
   await conn.createChannel();
-  await ch.consume(queuePedidosCriarEditarClientes, (msg) => {
+  await ch.consume(queues.queuePedidosCriarEditarClientes, (msg) => {
     const dadosClienteRecebido = JSON.parse(msg.content.toString());
     criarAtualizarCliente(dadosClienteRecebido);
 
     ch.ack(msg);
   }, { consumerTag: 'consumerPedidosCriarEditarClientes' });
 
-  await ch.consume(queuePedidosAtualizarAposPagamento, (msg) => {
+  await ch.consume(queues.queuePedidosAtualizarAposPagamento, (msg) => {
     const dadosPagamento = JSON.parse(msg.content.toString());
     atualizarStatusPagamentoNoPedido(dadosPagamento);
 
@@ -86,9 +69,9 @@ const criarPedido = async (req, res) => {
   };
   pedidos.push(novoPedido);
 
-  const conn = await getConnection();
+  const conn = await RabbitMQUtils.getConnection();
   const ch = await conn.createChannel();
-  await ch.publish(exchCreatePedidos, '', Buffer.from(JSON.stringify(novoPedido)));
+  await ch.publish(exchanges.exchCreatePedidos, '', Buffer.from(JSON.stringify(novoPedido)));
 
   res.status(201).header('location', `http://localhost:3001/pedidos/${id}`).send();
 };
@@ -96,7 +79,7 @@ const criarPedido = async (req, res) => {
 app.route('/clientes').get(listarClientes);
 app.route('/pedidos').post(criarPedido).get(listarPedidos);
 
-setupRabbitMQ().then(() => {
+RabbitMQUtils.setup().then(() => {
   app.listen(3001, () => {
     doConsume();
     console.log('Serviço de pedidos inicalizado');

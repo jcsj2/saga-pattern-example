@@ -1,28 +1,11 @@
 const express = require('express');
 const crypto = require('crypto');
-const { getConnection } = require('./rabbitmq');
+const {
+  RabbitMQUtils, exchanges, queues,
+} = require('./rabbitmq');
 
 const clientes = [];
 const pagamentos = [];
-const exchCreateEditClientes = 'ex-create-edit-clientes';
-const queuePagamentosCriarEditarClientes = 'q-pagamentos-criar-editar-clientes';
-
-const exchCreatePedidos = 'ex-create-pedidos';
-const queuePagamentosCriar = 'q-pagamentos-criar';
-
-const exchPagamentoExecutado = 'ex-pagamento-executado';
-
-const setupRabbitMQ = async () => {
-  const conn = await getConnection();
-  const ch = await conn.createChannel();
-  await ch.assertQueue(queuePagamentosCriarEditarClientes);
-  await ch.bindQueue(queuePagamentosCriarEditarClientes, exchCreateEditClientes, '');
-
-  await ch.assertQueue(queuePagamentosCriar);
-  await ch.bindQueue(queuePagamentosCriar, exchCreatePedidos, '');
-
-  await ch.assertExchange(exchPagamentoExecutado, 'fanout');
-};
 
 const criarAtualizarCliente = (dadosCliente) => {
   const indiceCliente = clientes.findIndex((c) => c.id === dadosCliente.id);
@@ -46,11 +29,11 @@ const simularPagamento = (pagamento) => {
     pagamentos[indicePagamento].status = pagamento.dadosCartao
     === '000000' ? 'PAGAMENTO_RECUSADO' : 'PAGAMENTO_CONCLUIDO';
 
-    getConnection().then(async (conn) => {
+    RabbitMQUtils.getConnection().then(async (conn) => {
       const ch = await conn.createChannel();
-      await ch.publish(exchPagamentoExecutado, '', Buffer.from(JSON.stringify(pagamentos[indicePagamento])));
+      await ch.publish(exchanges.exchPagamentoExecutado, '', Buffer.from(JSON.stringify(pagamentos[indicePagamento])));
     });
-  }, 30000);
+  }, 10000);
 };
 
 const criarPagamento = (dadosPedido) => {
@@ -69,17 +52,17 @@ const criarPagamento = (dadosPedido) => {
 };
 
 async function doConsume() {
-  const conn = await getConnection();
+  const conn = await RabbitMQUtils.getConnection();
   const ch = await conn.createChannel();
   await conn.createChannel();
-  await ch.consume(queuePagamentosCriarEditarClientes, (msg) => {
+  await ch.consume(queues.queuePagamentosCriarEditarClientes, (msg) => {
     const dadosClienteRecebido = JSON.parse(msg.content.toString());
     criarAtualizarCliente(dadosClienteRecebido);
 
     ch.ack(msg);
   }, { consumerTag: 'consumerPagamentosCriarEditarClientes' });
 
-  await ch.consume(queuePagamentosCriar, (msg) => {
+  await ch.consume(queues.queuePagamentosCriar, (msg) => {
     const dadosPedidoRecebido = JSON.parse(msg.content.toString());
     criarPagamento(dadosPedidoRecebido);
 
@@ -102,7 +85,7 @@ app.route('/clientes').get(listarClientes);
 
 app.route('/pagamentos').get(listarPagamentos);
 
-setupRabbitMQ().then(() => {
+RabbitMQUtils.setup().then(() => {
   app.listen(3002, () => {
     doConsume();
     console.log('Serviço de pagamentos inicializado');
